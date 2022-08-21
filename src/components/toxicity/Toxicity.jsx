@@ -1,24 +1,30 @@
 import { useEffect, useState } from 'react';
-import '../App.css';
+import '../../App.css';
 import {
   Anchor,
   Button,
+  Center,
   Container,
+  Loader,
   SimpleGrid,
   Slider,
+  Space,
   Text,
   Textarea,
   Title,
 } from '@mantine/core';
+import Table from './Table';
 
-import logo from './logo.svg';
+import logo from '../logo.svg';
 import * as toxicity from '@tensorflow-models/toxicity';
 
 function Toxicity() {
   const [modelLoading, setModelLoading] = useState(false);
   const [classifying, setClassifying] = useState(false);
   const [sentence, setSentence] = useState('Sally is nice!');
-  const [threshold, setThreshold] = useState(0.8);
+  const [sliderValue, setSliderValue] = useState(0);
+  const [threshold, setThreshold] = useState(0);
+  const [results, setResults] = useState(null);
 
   function classify() {
     setModelLoading(true);
@@ -28,9 +34,15 @@ function Toxicity() {
       model.classify(sentence).then((predictions) => {
         setClassifying(false);
         console.log(JSON.stringify(predictions, null, 2));
+        setResults(predictions, null, 2);
+        console.log(results);
       });
     });
   }
+
+  useEffect(() => {
+    setThreshold(sliderValue * 0.01);
+  }, [sliderValue]);
 
   return (
     <div>
@@ -67,29 +79,33 @@ function Toxicity() {
         <Text size="sm">Threshold</Text>
         <SimpleGrid cols={2}>
           <Slider
-            label="Threshold"
+            label={`.${sliderValue}`}
             marks={[
               { value: 0, label: '0.0' },
-              { value: 20, label: '0.2' },
+              { value: 25, label: '0.25' },
               { value: 50, label: '0.5' },
-              { value: 80, label: '0.8' },
+              { value: 75, label: '0.75' },
               { value: 100, label: '1.0' },
             ]}
-            value={threshold}
-            onChange={setThreshold}
+            value={sliderValue}
+            onChange={setSliderValue}
           />
           <Button sx={{ marginLeft: 'auto' }} onClick={classify}>
             Classify
           </Button>
         </SimpleGrid>
       </Container>
-      {modelLoading && (
-        <>
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>Model Loading</p>
-        </>
-      )}
-      {classifying && <p>Classifying</p>}
+      <Space h="lg" />
+      <Container>
+        <Space h="lg" />
+        {modelLoading || classifying ? (
+          <Center>
+            <Loader size={50} />
+          </Center>
+        ) : (
+          results && <Table results={results} />
+        )}
+      </Container>
     </div>
   );
 }

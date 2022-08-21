@@ -1,6 +1,6 @@
 import { AppShell, Navbar, Header, Stack } from '@mantine/core';
 
-import Toxicity from './components/Toxicity'
+import Toxicity from './components/toxicity/Toxicity'
 import NavButton from './components/NavButton'
 
 function NavButtons() {
